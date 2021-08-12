@@ -1,5 +1,54 @@
 #include <gtk/gtk.h>
 
+
+/* Surface to store current scribbles */
+static cairo_surface_t *surface = NULL;
+
+/* Redraw the screen from the surface. Note that the draw
+ * callback receives a ready-to-be-used cairo_t that is already
+ * clipped to only draw the exposed areas of the widget
+ */
+static void
+draw_cb(GtkDrawingArea *drawing_area, cairo_t *cr, int width, int height, gpointer data) {
+	cairo_set_source_surface(cr, surface, 0, 0);
+	cairo_paint(cr);
+}
+
+/* Create a new surface of the appropriate size to store our scribbles */
+static void
+resize_cb(GtkWidget *widget, int width, int height, gpointer data) {
+	if (surface) {
+		cairo_surface_destroy(surface);
+		surface = NULL;
+	}
+
+	if (gtk_native_get_surface(gtk_widget_get_native(widget))) {
+		surface = gdk_surface_create_similar_surface(gtk_native_get_surface(gtk_widget_get_native(widget)),
+				CAIRO_CONTENT_COLOR,
+				gtk_widget_get_width(widget),
+				gtk_widget_get_height(widget));
+
+		cairo_t *cr;
+
+		cr = cairo_create(surface);
+		cairo_set_source_rgb(cr, 0, 0, 0);
+		cairo_paint(cr);
+		cairo_destroy(cr);
+	}
+}
+
+gboolean
+mystify_animate(GtkWidget *window) {
+	cairo_t *cr;
+	cr = cairo_create(surface);
+	cairo_set_source_rgb(cr, 0.541, 0.835, 0.886);
+	cairo_rectangle(cr, 5, 5, 15, 15);
+	cairo_destroy(cr);
+
+	gtk_widget_queue_draw(window);
+	return TRUE;
+}
+
 static void
 activate(GtkApplication* app, gpointer user_data) {
 	GtkWidget *window;
@@ -41,9 +90,33 @@ activate(GtkApplication* app, gpointer user_data) {
 	gtk_box_append(GTK_BOX(box), button3);
 	gtk_box_append(GTK_BOX(tbox), box);
 
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+	gtk_widget_set_halign(box, GTK_ALIGN_CENTER);
+	gtk_widget_set_valign(box, GTK_ALIGN_CENTER);
+
+	button1 = gtk_button_new_with_label("SUBMIT");
+	gtk_box_append(GTK_BOX(tbox), button1);
+
+	GtkWidget *frame = gtk_frame_new (NULL);
+
+	GtkWidget *drawing_area;
+	drawing_area = gtk_drawing_area_new();
+	gtk_widget_set_size_request(drawing_area, 100, 100);
+	gtk_frame_set_child(GTK_FRAME(frame), drawing_area);
+
+	gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(drawing_area), draw_cb, NULL, NULL);
+	g_signal_connect_after(drawing_area, "resize", G_CALLBACK (resize_cb), NULL);
+
+	gtk_box_append(GTK_BOX(tbox), frame);
+
+	button1 = gtk_button_new_with_label("SUBMIT");
+	gtk_box_append(GTK_BOX(tbox), button1);
+
 	gtk_window_set_child(GTK_WINDOW(window), tbox);
 
 	gtk_widget_show(window);
+
+	g_timeout_add(20, (GSourceFunc)mystify_animate, drawing_area);
 }
 
 int
