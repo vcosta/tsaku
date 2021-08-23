@@ -31,21 +31,32 @@ resize_cb(GtkWidget *widget, int width, int height, gpointer data) {
 		cairo_t *cr;
 
 		cr = cairo_create(surface);
-		cairo_set_source_rgb(cr, 0, 0, 0);
+		cairo_set_source_rgb(cr, 0.5, 0, 0);
 		cairo_paint(cr);
 		cairo_destroy(cr);
 	}
 }
 
+static double color = 0.0;
+
 gboolean
 mystify_animate(GtkWidget *window) {
 	cairo_t *cr;
+
+	color += 0.1;
+
 	cr = cairo_create(surface);
-	cairo_set_source_rgb(cr, 0.541, 0.835, 0.886);
-	cairo_rectangle(cr, 5, 5, 15, 15);
+	cairo_set_source_rgb(cr, 0, color, 0);
+	cairo_rectangle(cr, 5, 5, 25, 25);
+	cairo_clip(cr);
+	cairo_paint(cr);
 	cairo_destroy(cr);
 
 	gtk_widget_queue_draw(window);
+
+	if (color >= 1.0)
+		color = 0.0;
+
 	return TRUE;
 }
 
