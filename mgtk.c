@@ -69,6 +69,14 @@ mystify_animate(GtkWidget *window) {
 	cairo_stroke(cr);
 	cairo_restore(cr);
 
+	cairo_save(cr);
+	cairo_set_antialias(cr, CAIRO_ANTIALIAS_FAST);
+	cairo_set_source_rgb(cr, 1, 1, 0);
+	cairo_set_font_size(cr, 20);
+	cairo_move_to(cr, 50, 20);
+	cairo_show_text(cr, "Hello, world!");
+	cairo_restore(cr);
+
 	cairo_destroy(cr);
 
 	gtk_widget_queue_draw(window);
