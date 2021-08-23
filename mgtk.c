@@ -46,10 +46,29 @@ mystify_animate(GtkWidget *window) {
 	color += 0.1;
 
 	cr = cairo_create(surface);
+
+	cairo_save(cr);
 	cairo_set_source_rgb(cr, 0, color, 0);
 	cairo_rectangle(cr, 5, 5, 25, 25);
 	cairo_clip(cr);
 	cairo_paint(cr);
+	cairo_restore(cr);
+
+	cairo_save(cr);
+	cairo_set_source_rgb(cr, 0, 0, color);
+	cairo_rectangle(cr, 5, 35, 25, 25);
+	cairo_clip(cr);
+	cairo_paint(cr);
+	cairo_restore(cr);
+
+	cairo_save(cr);
+	cairo_set_line_width(cr, 2.);
+	cairo_set_source_rgb(cr, 0, color, 0);
+	cairo_move_to(cr, 55, 55);
+	cairo_line_to(cr, 75, 75);
+	cairo_stroke(cr);
+	cairo_restore(cr);
+
 	cairo_destroy(cr);
 
 	gtk_widget_queue_draw(window);
